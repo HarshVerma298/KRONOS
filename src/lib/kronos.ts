@@ -61,53 +61,96 @@ interface ChatMessage {
 }
 
 export async function getAIResponse(
-  chatHistory: ChatMessage,
+  chatHistory: ChatMessage[],
   userAddress: string
 ): Promise<string> {
-  
   let onChainContext = "";
 
-  // We will now always fetch general address info to give the AI some real data to work with.
+  // --- Fetch last 10 transactions from Sepolia Blockscout ---
   try {
-    // Using the more general and robust 'get_address_info' endpoint for better context.
-    const apiUrl = `https://mcp.blockscout.com/api/v1/get_address_info?chain_id=11155111&address=${userAddress}`;
+    const apiUrl = `https://eth-sepolia.blockscout.com/api?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc`;
     const response = await fetch(apiUrl);
     const data = await response.json();
 
-    // Check if the API call was successful and data exists
-    if (data && data.result) {
-      // We create a clean summary object to avoid overwhelming the AI.
-      const addressSummary = {
-        address: data.result.address,
-        balance: data.result.balance, // The user's ETH balance
-        is_contract: data.result.is_contract,
-        ens_name: data.result.ens_name,
-        token_count: data.result.token_count, // How many different ERC-20 tokens they hold
-        nft_count: data.result.nft_count,   // How many different NFT collections they hold
-      };
-      onChainContext = `Here is a summary of the user's on-chain data in JSON format: ${JSON.stringify(addressSummary)}`;
+    if (data && Array.isArray(data.result) && data.result.length > 0) {
+      // Take the last 10 transactions
+      const recentTxs = data.result.slice(0, 10);
+
+      const incoming: any[] = [];
+      const outgoing: any[] = [];
+
+      recentTxs.forEach((tx) => {
+        const txData = {
+          hash: tx.hash.slice(0, 10) + "…",
+          from: tx.from,
+          to: tx.to,
+          value: Number(ethers.formatEther(tx.value)),
+          block: tx.blockNumber,
+        };
+        if (tx.to.toLowerCase() === userAddress.toLowerCase()) {
+          incoming.push(txData);
+        } else {
+          outgoing.push(txData);
+        }
+      });
+
+      const formatTxs = (txs: any[]) =>
+        txs
+          .map(
+            (tx, i) =>
+              `${i + 1}. Tx Hash: ${tx.hash}\n   From: ${tx.from}\n   To: ${tx.to}\n   Value: ${tx.value} ETH\n   Block: ${tx.block}`
+          )
+          .join("\n");
+
+      // Build a clean on-chain context string
+      let context = "";
+      if (incoming.length > 0) {
+        context += "**Incoming Transactions:**\n" + formatTxs(incoming) + "\n\n";
+        const incomingAddresses = [...new Set(incoming.map((tx) => tx.from))];
+        context += `Summary: You received ETH from ${incomingAddresses.length} different addresses:\n- ${incomingAddresses.join(
+          "\n- "
+        )}\n\n`;
+      } else {
+        context += "No incoming transactions in the last 10 transactions.\n\n";
+      }
+
+      if (outgoing.length > 0) {
+        context += "**Outgoing Transactions:**\n" + formatTxs(outgoing) + "\n\n";
+        const outgoingAddresses = [...new Set(outgoing.map((tx) => tx.to))];
+        context += `Summary: You sent ETH to ${outgoingAddresses.length} different addresses:\n- ${outgoingAddresses.join(
+          "\n- "
+        )}\n`;
+      } else {
+        context += "No outgoing transactions in the last 10 transactions.\n";
+      }
+
+      onChainContext = context;
     } else {
-      onChainContext = "I was unable to fetch the on-chain data for the user's address from Blockscout.";
+      onChainContext = "No recent transactions found for this wallet.";
     }
   } catch (error) {
-    console.error("Failed to fetch from Blockscout:", error);
+    console.error("❌ Failed to fetch Blockscout data:", error);
     onChainContext = "I encountered an error while trying to fetch data from Blockscout.";
   }
 
-  // This new prompt teaches the AI how to use the new, richer data.
-  const systemPrompt = `You are KRONOS, a friendly and helpful AI guide for the Web3 world, powered by Groq for lightning-fast responses.
-    Your goal is to help users understand their on-chain activity based on the data provided.
-    The user's wallet address is ${userAddress}.
-    
-    ON-CHAIN CONTEXT:
-    ${onChainContext}
-    
-    Based on the provided on-chain context and the conversation history, provide a helpful and concise response to the user's last message.
-    - When asked about "activity" or "what's in my wallet", use the provided context to give a summary (e.g., "I see your address has a balance of X ETH, and you're holding Y different tokens and Z NFTs.").
-    - If the user asks for specific transactions, you can state that you can see their balance and token counts, but a detailed transaction history lookup is a separate step.
-    - Keep your answers short and easy to understand for a beginner.
-    - If the on-chain context says data was unavailable, inform the user politely.`;
+  // --- AI system prompt ---
+  const systemPrompt = `
+You are KRONOS, a friendly Web3 assistant.
+The user's wallet address is ${userAddress}.
 
+ON-CHAIN CONTEXT:
+${onChainContext}
+
+Task:
+- Summarize the user's transactions clearly.
+- Keep incoming and outgoing separate.
+- Use bullet points and shortened hashes.
+- Highlight trends (like multiple addresses).
+- Keep answers short and beginner-friendly.
+- If no transactions exist, respond politely.
+`;
+
+  // --- Generate AI response ---
   try {
     const { text } = await generateText({
       model: groq("llama-3.1-8b-instant"),
@@ -116,7 +159,10 @@ export async function getAIResponse(
     });
     return text;
   } catch (error) {
-    console.error("Error generating Groq response:", error);
+    console.error("❌ Error generating Groq response:", error);
     return "I'm having a little trouble thinking right now. Please try again in a moment.";
   }
 }
+
+
+  

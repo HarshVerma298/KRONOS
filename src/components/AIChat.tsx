@@ -1,6 +1,6 @@
 // File: src/components/AIChat.tsx
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,13 +21,14 @@ export const AIChat = ({ address }: AIChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const scrollAreaRef = useRef<any>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll to bottom when messages update
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({ top: scrollAreaRef.current.scrollHeight, behavior: 'smooth' });
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -38,17 +39,13 @@ export const AIChat = ({ address }: AIChatProps) => {
     }
 
     const userMessage: Message = { role: "user", content: input };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
-    const aiResponseContent = await getAIResponse(newMessages, address);
+    const aiResponseContent = await getAIResponse([...messages, userMessage], address);
 
-    const aiResponse: Message = {
-      role: "assistant",
-      content: aiResponseContent,
-    };
+    const aiResponse: Message = { role: "assistant", content: aiResponseContent };
     setMessages((prev) => [...prev, aiResponse]);
     setIsLoading(false);
   };
@@ -66,7 +63,8 @@ export const AIChat = ({ address }: AIChatProps) => {
         </div>
 
         <Card className="gradient-card border-border h-[600px] flex flex-col">
-          <CardHeader className="border-b border-border">
+          {/* Header */}
+          <CardHeader className="border-b border-border flex-shrink-0">
             <CardTitle className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center animate-pulse-glow">
                 <Bot className="w-6 h-6 text-primary" />
@@ -77,60 +75,74 @@ export const AIChat = ({ address }: AIChatProps) => {
                   <Sparkles className="w-4 h-4 text-accent" />
                 </div>
                 <p className="text-xs font-normal text-muted-foreground">
-                  Powered by Blockscout & Groq
+                  Powered by Blockscout MCP
                 </p>
               </div>
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="flex-1 p-0 flex flex-col">
-            <ScrollArea className="flex-1 p-6" ref={scrollAreaRef}>
+          {/* Chat Messages */}
+          <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
+            <ScrollArea
+              className="flex-1 p-6 overflow-y-auto"
+              ref={scrollRef}
+            >
               <div className="space-y-4">
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex ${message.role === "user"? "justify-end" : "justify-start"} animate-slide-up`}
+                    className={`flex ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    } animate-slide-up`}
                   >
                     <div
                       className={`max-w-[80%] rounded-lg px-4 py-3 ${
                         message.role === "user"
-                        ? "bg-primary text-primary-foreground"
+                          ? "bg-primary text-primary-foreground"
                           : "bg-card border border-border"
                       }`}
                     >
-                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-sm leading-relaxed">{message.content}</p>
                     </div>
                   </div>
                 ))}
                 {isLoading && (
                   <div className="flex justify-start animate-slide-up">
                     <div className="max-w-[80%] rounded-lg px-4 py-3 bg-card border border-border">
-                      <p className="text-sm leading-relaxed animate-pulse">KRONOS is thinking...</p>
+                      <p className="text-sm leading-relaxed animate-pulse">
+                        KRONOS is thinking...
+                      </p>
                     </div>
                   </div>
                 )}
               </div>
             </ScrollArea>
-
-            <div className="p-4 border-t border-border">
-              <div className="flex gap-2">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Ask about your on-chain activity..."
-                  className="flex-1"
-                  disabled={!address}
-                />
-                <Button onClick={handleSend} size="icon" variant="default" disabled={isLoading ||!address}>
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                KRONOS verifies all actions on-chain using Blockscout
-              </p>
-            </div>
           </CardContent>
+
+          {/* Input */}
+          <div className="p-4 border-t border-border flex-shrink-0">
+            <div className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Ask about your transactions..."
+                className="flex-1"
+                disabled={!address}
+              />
+              <Button
+                onClick={handleSend}
+                size="icon"
+                variant="default"
+                disabled={isLoading || !address}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              KRONOS verifies all actions on-chain using Blockscout
+            </p>
+          </div>
         </Card>
       </div>
     </section>
