@@ -31,10 +31,10 @@ const Index = ({ address, connectWallet }: IndexProps) => {
       {/* Footer */}
       <footer className="border-t border-border py-8 px-4 text-center text-muted-foreground">
         <p className="text-sm">
-          Project KRONOS - ETHOnline 2025 Hackathon
+          Project KRONOS - Your AI-Powered Web3 Learning Companion
         </p>
         <p className="text-xs mt-2">
-          Built with ❤️ using Blockscout MCP & PayPal PYUSD
+          Built using Blockscout MCP & PayPal PYUSD
         </p>
       </footer>
     </div>

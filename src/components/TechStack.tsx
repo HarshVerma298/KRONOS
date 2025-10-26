@@ -16,13 +16,13 @@ export const TechStack = () => {
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4">
-            Powered By
+            Powered By Loveable
           </Badge>
           <h2 className="text-3xl font-bold mb-4">
             Built for <span className="text-gradient">ETHOnline 2025</span>
           </h2>
           <p className="text-muted-foreground">
-            Competing for Blockscout's "Vibe Code" and PayPal's "PYUSD Possibilities" prizes
+            {/* Competing for Blockscout's "Vibe Code" and PayPal's "PYUSD Possibilities" prizes */}
           </p>
         </div>
 
@@ -41,23 +41,7 @@ export const TechStack = () => {
               ))}
             </div>
 
-            <div className="mt-8 p-6 rounded-lg bg-primary/10 border border-primary/30">
-              <h3 className="font-semibold text-lg mb-3 text-center">Prize Alignment</h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <div className="font-medium text-primary">🏆 Blockscout Prize</div>
-                  <p className="text-sm text-muted-foreground">
-                    Entire intelligence layer powered by Blockscout MCP Server for on-chain quest verification
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <div className="font-medium text-reward">💰 PayPal Prize</div>
-                  <p className="text-sm text-muted-foreground">
-                    PYUSD as trusted onboarding incentive - education meets seamless micro-rewards
-                  </p>
-                </div>
-              </div>
-            </div>
+            
           </CardContent>
         </Card>
       </div>
