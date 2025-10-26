@@ -51,7 +51,7 @@ This solution demonstrates how Blockscout can provide reliable on-chain verifica
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React, Vite, TypeScript, Tailwind CSS, shadcn-ui  
+- **Frontend**: React, Vite, TypeScript, Tailwind CSS, shadcn-ui 
 - **Blockchain**: Ethereum Sepolia Testnet, ethers.js  
 - **Wallets**: MetaMask  
 - **Backend & DB**: Supabase (auth, Edge Functions, database)  
@@ -170,6 +170,18 @@ Short notes
 - `public/` — static assets for the site.
 
 
+## 🏆 Hackathon Relevance
+
+KRONOS was built to demonstrate the potential of **Web3 onboarding, user engagement, and secure reward systems** in hackathon settings. Its relevance lies in:
+
+- **Practical Web3 Learning**: Helps users understand on-chain activity and wallet operations in a gamified way.
+- **On-Chain Quest Verification**: Showcases automated verification of blockchain actions (like Uniswap swaps) using Blockscout MCP, a decentralized, transparent data layer.
+- **Seamless Micro-Rewards**: Integrates PYUSD (a stable, trusted token) to incentivize users for completing learning or engagement tasks, bridging traditional payment trust with blockchain rewards.
+- **AI-Enhanced UX**: Uses Groq/AI to summarize wallet activity, making blockchain data accessible to beginners.
+- **Hackathon Innovation**: Combines frontend, smart contract interaction, serverless functions, and AI into a single, deployable project — demonstrating full-stack Web3 capabilities.
+
+This project emphasizes **education, engagement, and secure incentivization**, key areas in Web3 adoption, making it a strong contender for hackathon recognition.
+
 
 
 ## Implementation Details
@@ -180,6 +192,45 @@ Short notes
 - Reward sending: Uses ethers.js to transfer PYUSD tokens securely. Key must be stored server-side.
 
 - Frontend: React + Tailwind CSS for responsive and smooth UI.
+
+## 🔧 Technical Implementation
+
+### Frontend
+- **Framework**: React + Vite + TypeScript
+- **UI Library**: Tailwind CSS + shadcn-ui components
+- **Wallet Integration**: MetaMask for connecting user wallets
+- **Chat Assistant**: AI-powered assistant using Groq/AI
+- **User Interface**: Interactive chat, quest verification buttons, and responsive design
+
+### On-Chain Interaction
+- **ethers.js**: 
+  - Send PYUSD rewards securely
+  - Interact with Ethereum blockchain (read contract state, sign transactions)
+- **Blockchain Network**: Ethereum Sepolia Testnet
+- **Block Explorer API**: Blockscout MCP — used to fetch transaction history for quest verification
+- **Quest Verification Logic**: Checks if user has completed specific on-chain actions (e.g., Uniswap swaps)
+
+### Backend & Serverless Functions
+- **Supabase Functions**: Server-side logic for sensitive operations (e.g., sending rewards with treasury private key)
+- **Supabase Auth & Database**: User authentication, persistence, and storing quest status
+
+### AI Assistant Integration
+- **Groq / AI**: Generates contextual responses about wallet activity
+- **On-Chain Context**: Summarizes recent transactions for the user
+- **Security**: Private keys never exposed; sensitive operations are performed server-side
+
+### Security Considerations
+- Treasury private key stored only in server-side environment (Supabase Functions or server environment)
+- Vite client exposes only public keys (Groq API key and Supabase anon key)
+- All blockchain interactions are validated to prevent incorrect rewards
+
+### Summary Flow
+1. User connects wallet (MetaMask)
+2. User performs on-chain action (e.g., swap on Uniswap)
+3. KRONOS verifies transaction using Blockscout MCP API
+4. AI assistant summarizes activity in chat
+5. If quest completed, user can receive PYUSD reward via ethers.js (handled securely on server)
+
 
 
 
