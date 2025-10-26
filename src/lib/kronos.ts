@@ -68,16 +68,15 @@ export async function getAIResponse(
 ): Promise<string> {
   let onChainContext = "";
 
-  // --- Fetch last 10 transactions from Sepolia Blockscout ---
   try {
     const apiUrl = `https://eth-sepolia.blockscout.com/api?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc`;
     const response = await fetch(apiUrl);
     const data = await response.json();
 
-    if (data && Array.isArray(data.result) && data.result.length > 0) {
-      // Take the last 10 transactions
+    if (!data || !Array.isArray(data.result) || data.result.length === 0) {
+      onChainContext = "No recent transactions found for this wallet.";
+    } else {
       const recentTxs = data.result.slice(0, 10);
-
       const incoming: any[] = [];
       const outgoing: any[] = [];
 
@@ -89,9 +88,10 @@ export async function getAIResponse(
           value: Number(ethers.formatEther(tx.value)),
           block: tx.blockNumber,
         };
+
         if (tx.to.toLowerCase() === userAddress.toLowerCase()) {
           incoming.push(txData);
-        } else {
+        } else if (tx.from.toLowerCase() === userAddress.toLowerCase()) {
           outgoing.push(txData);
         }
       });
@@ -104,38 +104,34 @@ export async function getAIResponse(
           )
           .join("\n");
 
-      // Build a clean on-chain context string
-      let context = "";
+      onChainContext = "";
+
       if (incoming.length > 0) {
-        context += "**Incoming Transactions:**\n" + formatTxs(incoming) + "\n\n";
+        onChainContext += "**Incoming Transactions:**\n" + formatTxs(incoming) + "\n\n";
         const incomingAddresses = [...new Set(incoming.map((tx) => tx.from))];
-        context += `Summary: You received ETH from ${incomingAddresses.length} different addresses:\n- ${incomingAddresses.join(
+        onChainContext += `Summary: You received ETH from ${incomingAddresses.length} different addresses:\n- ${incomingAddresses.join(
           "\n- "
         )}\n\n`;
       } else {
-        context += "No incoming transactions in the last 10 transactions.\n\n";
+        onChainContext += "No incoming transactions in the last 10 transactions.\n\n";
       }
 
       if (outgoing.length > 0) {
-        context += "**Outgoing Transactions:**\n" + formatTxs(outgoing) + "\n\n";
+        onChainContext += "**Outgoing Transactions:**\n" + formatTxs(outgoing) + "\n\n";
         const outgoingAddresses = [...new Set(outgoing.map((tx) => tx.to))];
-        context += `Summary: You sent ETH to ${outgoingAddresses.length} different addresses:\n- ${outgoingAddresses.join(
+        onChainContext += `Summary: You sent ETH to ${outgoingAddresses.length} different addresses:\n- ${outgoingAddresses.join(
           "\n- "
         )}\n`;
       } else {
-        context += "No outgoing transactions in the last 10 transactions.\n";
+        onChainContext += "No outgoing transactions in the last 10 transactions.\n";
       }
-
-      onChainContext = context;
-    } else {
-      onChainContext = "No recent transactions found for this wallet.";
     }
   } catch (error) {
     console.error("❌ Failed to fetch Blockscout data:", error);
-    onChainContext = "I encountered an error while trying to fetch data from Blockscout.";
+    onChainContext =
+      "I encountered an error while trying to fetch data from Blockscout. Please try again later.";
   }
 
-  // --- AI system prompt ---
   const systemPrompt = `
 You are KRONOS, a friendly Web3 assistant.
 The user's wallet address is ${userAddress}.
@@ -152,7 +148,6 @@ Task:
 - If no transactions exist, respond politely.
 `;
 
-  // --- Generate AI response ---
   try {
     const { text } = await generateText({
       model: groq("llama-3.1-8b-instant"),
@@ -165,6 +160,5 @@ Task:
     return "I'm having a little trouble thinking right now. Please try again in a moment.";
   }
 }
-
 
   

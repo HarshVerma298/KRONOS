@@ -170,7 +170,7 @@ Short notes
 - `public/` — static assets for the site.
 
 
-## 🏆 Hackathon Relevance
+## 🏆 Hackathon 
 
 KRONOS was built to demonstrate the potential of **Web3 onboarding, user engagement, and secure reward systems** in hackathon settings. Its relevance lies in:
 
