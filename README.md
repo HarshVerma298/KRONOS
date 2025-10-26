@@ -1,6 +1,5 @@
 # 🔥 KRONOS — Web3 Quest Assistant
 
-**Project URL:** https://lovable.dev/projects/a82f2979-c3a3-45a1-8c4b-d7448fbe82de
 
 KRONOS is a Web3-focused quest and AI assistant that helps users verify on-chain activity (like Uniswap swaps) and interact with an AI-powered assistant. Users can optionally receive on-chain rewards (PYUSD) when configured securely. Built with React, Vite, ethers.js, Supabase, and Groq/AI.
 
@@ -98,6 +97,8 @@ VITE_TREASURY_PRIVATE_KEY=0xYOUR_PRIVATE_KEY
 npm run dev
 ```
 
+
+
 ## Project structure (repo tree)
 
 Below is a concise diagram of this repository's top-level structure and important subfolders.
@@ -169,6 +170,8 @@ Short notes
 - `public/` — static assets for the site.
 
 
+
+
 ## Implementation Details
 - AI assistant: Summarizes recent transactions, highlights incoming/outgoing activity, and prioritizes wallet activity.
 
@@ -177,6 +180,9 @@ Short notes
 - Reward sending: Uses ethers.js to transfer PYUSD tokens securely. Key must be stored server-side.
 
 - Frontend: React + Tailwind CSS for responsive and smooth UI.
+
+
+
 
 ## 🤝 Contributing
 - Fork the repository
@@ -190,9 +196,14 @@ Short notes
 - Never commit secrets
 
 
+
+
 ## 📄 License
 
 MIT License — see LICENSE file.
+
+
+
 
 
 Built with ❤️ for Eth Global Online Hackathon.
