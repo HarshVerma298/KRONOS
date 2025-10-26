@@ -6,25 +6,27 @@ import { generateText } from "ai";
 
 // --- Quest Verification & Reward Logic (No changes here) ---
 export async function verifySwapQuest(userAddress: string): Promise<boolean> {
-  const SEPOLIA_CHAIN_ID = '11155111';
-  const UNISWAP_ROUTER_ADDRESS = '0x3fC91A3afd70395E496CB848C926fE63489421p3'; 
+  const UNISWAP_ROUTER_ADDRESS = '0xeE567Fe1712Faf6149d80dA1E6934E354124CfE3'; 
 
-  const apiUrl = `https://mcp.blockscout.com/api/v1/get_transactions_by_address?chain_id=${SEPOLIA_CHAIN_ID}&address=${userAddress}`;
+  const apiUrl = `https://eth-sepolia.blockscout.com/api?module=account&action=txlist&address=${userAddress}&startblock=0&endblock=99999999&sort=desc`;
 
   try {
     const response = await fetch(apiUrl);
     const data = await response.json();
-    if (!data.result) return false;
+    if (!data.result || !Array.isArray(data.result)) return false;
 
     const hasSwapped = data.result.some(
-      (tx: any) => tx.to.address.toLowerCase() === UNISWAP_ROUTER_ADDRESS.toLowerCase()
+      (tx: any) =>
+        tx.to && tx.to.toLowerCase() === UNISWAP_ROUTER_ADDRESS.toLowerCase()
     );
+
     return hasSwapped;
   } catch (error) {
-    console.error("Error verifying quest:", error);
+    console.error("Error verifying swap quest:", error);
     return false;
   }
 }
+
 
 export async function sendPyusdReward(recipientAddress: string, amountInDollars: number): Promise<string | null> {
     const treasuryPrivateKey = import.meta.env.VITE_TREASURY_PRIVATE_KEY;
