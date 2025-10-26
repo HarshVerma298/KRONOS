@@ -15,7 +15,7 @@ const features = [
   {
     icon: Coins,
     title: "Real PYUSD Rewards",
-    description: "Earn PayPal's stablecoin as you learn. Your rewards are instantly sent to your wallet upon quest completion.",
+    description: "Earn PayPal's stablecoin PYUSD as you learn. Your rewards are instantly sent to your wallet upon quest completion.",
   },
   {
     icon: Zap,

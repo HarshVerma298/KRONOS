@@ -9,7 +9,7 @@ interface HeroProps {
   connectWallet: () => Promise<void>;
 }
 
-// 2. Next, we update the component to accept 'address' and 'connectWallet' as props.
+// 2. Next, update the component to accept 'address' and 'connectWallet' as props.
 export const Hero = ({ address, connectWallet }: HeroProps) => {
   return (
     <section className="relative min-h-screen gradient-hero flex items-center justify-center overflow-hidden">

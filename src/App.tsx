@@ -11,7 +11,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Call the useWallet hook at the top level of your app
+  // Call the useWallet hook at the top level of your app.
   const { address, connectWallet } = useWallet();
 
   return (
